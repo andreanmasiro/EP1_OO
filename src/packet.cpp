@@ -12,8 +12,9 @@ Packet::Packet(const array::array* data) {
     }
 }
 
-Packet::Packet(const byte tag, const array::array* value)  {
+Packet::Packet(const byte tag, const array::array *value)  {
     this->tag = tag;
+    this->value = nullptr;
     this->setValue(value);
 }
 

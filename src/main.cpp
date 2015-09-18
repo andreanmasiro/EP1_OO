@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstring>
 #include "network.hpp"
 #include "crypto.hpp"
 #include "array.hpp"
@@ -15,7 +16,7 @@ void sendPacket(const int fd, Packet *packet) {
     memcpy(rawPacket->data, header, 4);
     memcpy(rawPacket->data + 4, packet->bytes()->data, packetSize);
 
-    printf("Sending packet ");
+    printf("Sending packet with length %d\n", packetSize);
     for (size_t i = 0; i < packetSize + 4; i++) {
         printf("%X ", rawPacket->data[i]);
     }
@@ -41,16 +42,14 @@ int main() {
         cout << "Connection succeeded at " << fd << endl;
     }
 
-    printf("Bytes...\n");
     byte valueBytes[4] = {0xFF, 0x24, 0x12, 0x35};
-    array::array *value = array::create(4);
-    memcpy(value->data, valueBytes, 4);
+    array::array *value = array::create(sizeof(byte)*4);
+    memcpy(value->data, valueBytes, sizeof(byte)*4);
 
-    printf("Packet...\n");
+
     Packet *packet = new Packet(0xC0, value);
 
     // array::destroy(value);
-    printf("Sending...\n");
     sendPacket(fd, packet);
     // array::array *packet = array::create(7);
     // byte packetSize[4] = {0x03, 0x0, 0x0, 0x0};
@@ -60,11 +59,10 @@ int main() {
     // memcpy(packet->data + 4, packetInfo, 3);
     //
     // network::write(fd, packet);
-    printf("Receiving...\n");
     array::array *received_packet;
     received_packet = readPacket(fd);
     if (received_packet != nullptr) {
-        cout << "Packet length: " << received_packet->length << endl;
+        cout << "Receiving packet with length: " << received_packet->length << endl;
         for (size_t i = 0; i < received_packet->length; i++) {
             printf("%X ", received_packet->data[i]);
         }
