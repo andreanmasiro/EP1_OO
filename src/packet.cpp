@@ -14,7 +14,7 @@ Packet::Packet(const array::array* data) {
 
 Packet::Packet(const byte tag, const array::array* value)  {
     this->tag = tag;
-    this->set_value(value);
+    this->setValue(value);
 }
 
 Packet::Packet(const byte tag) {
@@ -31,10 +31,11 @@ Packet::~Packet() {
 }
 
 size_t Packet::total_size() {
-    return 3 + (value != nullptr ? value->length : 0) + (signature != nullptr ? signature->length : 0);
+    size_t valueLength = (value != nullptr ? value->length : 0);
+    return 3 + valueLength + (signature != nullptr ? 20 : 0);
 }
 
-void Packet::set_value(const array::array* value) {
+void Packet::setValue(const array::array* value) {
     if(this->value != nullptr) {
         array::destroy(this->value);
         array::destroy(this->signature);
@@ -64,9 +65,8 @@ array::array* Packet::bytes() {
     raw->data[2] = (this->length >> 8) & 0xFF;
 
     if(this->length > 0) {
-        memcpy(raw->data + 3, this->value, this->length);
-        memcpy(raw->data + 3 + this->length, this->signature, 20);
+        memcpy(raw->data + 3, this->value->data, this->length);
+        memcpy(raw->data + 3 + this->length, this->signature->data, 20);
     }
-
     return raw;
 }

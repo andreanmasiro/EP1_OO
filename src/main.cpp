@@ -2,8 +2,35 @@
 #include "network.hpp"
 #include "crypto.hpp"
 #include "array.hpp"
+#include "packet.hpp"
 
 using namespace std;
+
+void sendPacket(const int fd, Packet *packet) {
+    array::array *rawPacket;
+    size_t packetSize = packet->total_size();
+    rawPacket = array::create(packetSize + 4);
+    byte header[4] = {packetSize & 0xFF, (packetSize >> 8) & 0xFF, (packetSize >> 16 & 0xFF, (packetSize >> 24) & 0xFF)};
+
+    memcpy(rawPacket->data, header, 4);
+    memcpy(rawPacket->data + 4, packet->bytes()->data, packetSize);
+
+    printf("Sending packet ");
+    for (size_t i = 0; i < packetSize + 4; i++) {
+        printf("%X ", rawPacket->data[i]);
+    }
+    network::write(fd, rawPacket);
+    array::destroy(rawPacket);
+    printf("\n");
+}
+
+array::array *readPacket(const int fd) {
+    array::array* data = network::read(fd);
+    if (data == nullptr) {
+        printf("Read NULL data.\n");
+    }
+    return data;
+}
 
 int main() {
     int fd;
@@ -14,20 +41,32 @@ int main() {
         cout << "Connection succeeded at " << fd << endl;
     }
 
-    array::array *packet = array::create(7);
-    byte packetSize[4] = {0x03, 0x0, 0x0, 0x0};
-    memcpy(packet->data, packetSize, 4);
+    printf("Bytes...\n");
+    byte valueBytes[4] = {0xFF, 0x24, 0x12, 0x35};
+    array::array *value = array::create(4);
+    memcpy(value->data, valueBytes, 4);
 
-    byte packetInfo[3] = {0xC0, 0x0, 0x0};
-    memcpy(packet->data + 4, packetInfo, 3);
+    printf("Packet...\n");
+    Packet *packet = new Packet(0xC0, value);
 
-    network::write(fd, packet);
+    // array::destroy(value);
+    printf("Sending...\n");
+    sendPacket(fd, packet);
+    // array::array *packet = array::create(7);
+    // byte packetSize[4] = {0x03, 0x0, 0x0, 0x0};
+    // memcpy(packet->data, packetSize, 4);
+    //
+    // byte packetInfo[3] = {0xC0, 0x0, 0x0};
+    // memcpy(packet->data + 4, packetInfo, 3);
+    //
+    // network::write(fd, packet);
+    printf("Receiving...\n");
     array::array *received_packet;
-    received_packet = network::read(fd);
+    received_packet = readPacket(fd);
     if (received_packet != nullptr) {
         cout << "Packet length: " << received_packet->length << endl;
         for (size_t i = 0; i < received_packet->length; i++) {
-            printf("0x%X ", received_packet->data[i]);
+            printf("%X ", received_packet->data[i]);
         }
     }
     printf("\n");

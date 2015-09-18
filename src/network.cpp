@@ -28,7 +28,7 @@ int connect(const std::string& host, const int& port) {
 	return socket_fd;
 }
 
-void write(int fd, const array::array* content) {
+void write(int fd, const array::array *content) {
 	if(fd >= 0) {
 		send(fd, content->data, content->length, 0);
 	}

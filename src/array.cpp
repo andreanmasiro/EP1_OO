@@ -9,7 +9,7 @@ using namespace std;
 
 namespace array {
 
-std::ostream& operator<<(std::ostream &os, const array& a) {
+std::ostream& operator<<(std::ostream &os, const array &a) {
 	std::ios::fmtflags f(os.flags()); // save formating flags
 
 	os << "array #" << a.length << " [";
@@ -32,7 +32,7 @@ std::ostream& operator<<(std::ostream &os, const array& a) {
 	return os;
 }
 
-array* create(const size_t& capacity) {
+array* create(const size_t &capacity) {
 	array *m = new array();
 	m->data = new byte[capacity];
 	m->length = capacity;
@@ -43,14 +43,14 @@ array* create(const size_t& capacity) {
 	return m;
 }
 
-array* create(const size_t& capacity, byte* data) {
+array* create(const size_t &capacity, byte *data) {
 	array* m = create(capacity);
 	memcpy(m->data, data, capacity);
 	m->_tag = NORMAL_ARRAY;
 	return m;
 
 }
-array* wrap(const size_t& capacity, byte* data) {
+array* wrap(const size_t &capacity, byte *data) {
 	array* m = new array();
 	m->length = capacity;
 	m->data = data;
@@ -58,14 +58,14 @@ array* wrap(const size_t& capacity, byte* data) {
 	return m;
 }
 
-void destroy(array* a) {
+void destroy(array *a) {
 	if(a->_tag == NORMAL_ARRAY) {
 		delete[] a->data;
 	}
 	delete a;
 }
 
-array* copy(const array* a) {
+array* copy(const array *a) {
 	array* b = create(a->length);
 	b->_tag = a->_tag;
 
