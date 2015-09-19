@@ -16,7 +16,7 @@ void sendPacket(const int fd, Packet *packet) {
     memcpy(rawPacket->data, header, 4);
     memcpy(rawPacket->data + 4, packet->bytes()->data, packetSize);
 
-    printf("Sending packet with length %d\n", packetSize);
+    printf("Sending packet with length %lu\n", packetSize);
     for (size_t i = 0; i < packetSize + 4; i++) {
         printf("%X ", rawPacket->data[i]);
     }
@@ -49,16 +49,9 @@ int main() {
 
     Packet *packet = new Packet(0xC0, value);
 
-    // array::destroy(value);
     sendPacket(fd, packet);
-    // array::array *packet = array::create(7);
-    // byte packetSize[4] = {0x03, 0x0, 0x0, 0x0};
-    // memcpy(packet->data, packetSize, 4);
-    //
-    // byte packetInfo[3] = {0xC0, 0x0, 0x0};
-    // memcpy(packet->data + 4, packetInfo, 3);
-    //
-    // network::write(fd, packet);
+    delete packet;
+    printf("DESTRUCTION\n");
     array::array *received_packet;
     received_packet = readPacket(fd);
     if (received_packet != nullptr) {

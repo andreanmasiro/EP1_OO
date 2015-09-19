@@ -51,7 +51,7 @@ array* create(const size_t &capacity, byte *data) {
 
 }
 array* wrap(const size_t &capacity, byte *data) {
-	array* m = new array();
+	array *m = new array();
 	m->length = capacity;
 	m->data = data;
 	m->_tag = WRAPPED_ARRAY;
