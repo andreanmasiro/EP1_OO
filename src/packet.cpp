@@ -25,6 +25,7 @@ Packet::Packet(const byte tag) {
 }
 
 Packet::~Packet() {
+    printf("Packet being dealloced\n");
     if(this->value != nullptr) {
         array::destroy(this->value);
         array::destroy(this->signature);
@@ -70,4 +71,11 @@ array::array* Packet::bytes() {
         memcpy(raw->data + 3 + this->length, this->signature->data, 20);
     }
     return raw;
+}
+
+int Packet::tagIs(byte tag) {
+    if (this->tag == tag) {
+        return 1;
+    }
+    return 0;
 }

@@ -21,6 +21,7 @@ public:
 	void setValue(const array::array *value);
 	array::array *bytes();
 	friend ostream& operator<<(ostream &os, const Packet &p);
+	int tagIs(byte tag);
 
 private:
 	byte tag;

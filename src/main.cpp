@@ -5,62 +5,21 @@
 #include "array.hpp"
 #include "packet.hpp"
 
+#define ECHO_PORT 3001
+#define SERVICE_PORT 3000
+
 using namespace std;
-
-void sendPacket(const int fd, Packet *packet) {
-    array::array *rawPacket;
-    size_t packetSize = packet->total_size();
-    rawPacket = array::create(packetSize + 4);
-    byte header[4] = {packetSize & 0xFF, (packetSize >> 8) & 0xFF, (packetSize >> 16 & 0xFF, (packetSize >> 24) & 0xFF)};
-
-    memcpy(rawPacket->data, header, 4);
-    memcpy(rawPacket->data + 4, packet->bytes()->data, packetSize);
-
-    printf("Sending packet with length %lu\n", packetSize);
-    for (size_t i = 0; i < packetSize + 4; i++) {
-        printf("%X ", rawPacket->data[i]);
-    }
-    network::write(fd, rawPacket);
-    array::destroy(rawPacket);
-    printf("\n");
-}
-
-array::array *readPacket(const int fd) {
-    array::array* data = network::read(fd);
-    if (data == nullptr) {
-        printf("Read NULL data.\n");
-    }
-    return data;
-}
 
 int main() {
     int fd;
-    if ((fd = network::connect("45.55.185.4", 3001)) < 0) {
+    if ((fd = network::connect("45.55.185.4", SERVICE_PORT)) < 0) {
         cout << "Connection failed." << endl;
         return -1;
     } else {
         cout << "Connection succeeded at " << fd << endl;
     }
 
-    byte valueBytes[4] = {0xFF, 0x24, 0x12, 0x35};
-    array::array *value = array::create(sizeof(byte)*4);
-    memcpy(value->data, valueBytes, sizeof(byte)*4);
-
-
-    Packet *packet = new Packet(0xC0, value);
-
-    sendPacket(fd, packet);
-    delete packet;
-    printf("DESTRUCTION\n");
-    array::array *received_packet;
-    received_packet = readPacket(fd);
-    if (received_packet != nullptr) {
-        cout << "Receiving packet with length: " << received_packet->length << endl;
-        for (size_t i = 0; i < received_packet->length; i++) {
-            printf("%X ", received_packet->data[i]);
-        }
-    }
-    printf("\n");
+    network::requestAuthentication(fd);
 
     return 0;
 }
