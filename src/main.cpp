@@ -19,7 +19,8 @@ int main() {
         cout << "Connection succeeded at " << fd << endl;
     }
 
-    network::requestAuthentication(fd);
-
+    network::requestRegistration(fd);
+    network::requestUserId(fd);
+    network::close_socket(fd);
     return 0;
 }

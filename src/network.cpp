@@ -7,6 +7,8 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
+#define USER_ID {0x5C, 0x47, 0x69, 0x89, 0x60, 0x16, 0x8E, 0x67}
+
 namespace network {
 
 	int connect(const std::string& host, const int& port) {
@@ -72,11 +74,11 @@ namespace network {
 		else return nullptr;
 	}
 
-	void close(int fd) {
+	void close_socket(int fd) {
 		if(fd >= 0) {
 			close(fd);
+			printf("Socket closed.\n");
 		}
-
 		else {
 			// TODO throw an exception here.
 		}
@@ -91,10 +93,11 @@ namespace network {
 	    memcpy(rawPacket->data, header, 4);
 	    memcpy(rawPacket->data + 4, packet->bytes()->data, packetSize);
 
-	    printf("Sending packet with length %lu\n", packetSize);
-	    for (size_t i = 0; i < packetSize + 4; i++) {
-	        printf("%X ", rawPacket->data[i]);
-	    }
+	    // printf("Sending packet with length %lu\n", packetSize);
+	    // for (size_t i = 0; i < packetSize + 4; i++) {
+	    //     printf("%X ", rawPacket->data[i]);
+	    // }
+
 	    network::write(fd, rawPacket);
 	    array::destroy(rawPacket);
 	    printf("\n");
@@ -114,15 +117,42 @@ namespace network {
 	    return packet;
 	}
 
-	void requestAuthentication(int fd) {
-		printf("Requesting authentication...\n");
+	void requestRegistration(int fd) {
+		printf("Requesting registration...\n");
 		Packet *packet = new Packet(0xC0);
 		network::sendPacket(fd, packet);
 	    delete packet;
 
 		packet = readPacket(fd);
 		if (packet->tagIs(0xC1)) {
-			printf("Authentication complete.\n");
+			array::array *content = packet->bytes();
+			for (size_t i = 0; i < content->length; i++) {
+				/* code */
+				printf("%X ", content->data[i]);
+			}
+
+			printf("Registration complete.\n");
+		}
+	}
+
+	void requestUserId(int fd) {
+		printf("Requesting user ID...\n");
+		RSA *key = crypto::rsa_read_public_key_from_PEM("public.pem");
+		byte userId[8] = USER_ID;
+
+		array::array *id = array::create(8, userId);
+		array::array *enc_id = crypto::rsa_encrypt(id, key);
+		array::destroy(id);
+
+		Packet *packet = new Packet(0xC2, enc_id);
+		sendPacket(fd, packet);
+		delete packet;
+
+		packet = readPacket(fd);
+		array::array *content = packet->bytes();
+		for (size_t i = 0; i < content->length; i++) {
+			/* code */
+			printf("%X ", content->data[i]);
 		}
 	}
 }

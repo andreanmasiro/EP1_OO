@@ -18,7 +18,7 @@ namespace network {
 /*
    Closes a socket.
  */
-    void close(int fd);
+    void close_socket(int fd);
 
 /*
    Writes the data in the _content_ array into the giving socket.
@@ -42,6 +42,8 @@ namespace network {
 
     Packet *readPacket(const int fd);
 
-    void requestAuthentication(int fd);
+    void requestRegistration(int fd);
+
+    void requestUserId(int fd);
 }
 #endif
