@@ -138,13 +138,46 @@ namespace network {
 		delete packet;
 
 		packet = readPacket(fd);
-		array::array *s_enc = packet->getValue();
+		if (packet->tagIs(0xC3)) {
+			/* code */
+			array::array *s_enc = packet->getValue();
 
-		crypto::rsa_destroy_key(key);
-		key = crypto::rsa_read_private_key_from_PEM("private.pem");
+			crypto::rsa_destroy_key(key);
+			key = crypto::rsa_read_private_key_from_PEM("private.pem");
 
-		array::array *s_dec = crypto::rsa_decrypt(s_enc, key);
-		printf("User registered.\n");
-		return s_dec;
+			array::array *s_dec = crypto::rsa_decrypt(s_enc, key);
+			printf("User registered.\n");
+			return s_dec;
+		}
+		return nullptr;
+	}
+
+	array::array *requestAuthentication(int fd) {
+		printf("Requesting authentication...\n");
+
+		RSA *key = crypto::rsa_read_public_key_from_PEM("server_pk.pem");
+		byte userId[8] = USER_ID;
+
+		array::array *id = array::create(8, userId);
+		array::array *enc_id = crypto::rsa_encrypt(id, key);
+		array::destroy(id);
+
+		Packet *packet = new Packet(0xA0, enc_id);
+		sendPacket(fd, packet);
+		delete packet;
+
+		packet = readPacket(fd);
+		if (packet->tagIs(0xA1)) {
+			/* code */
+			array::array *a_enc = packet->getValue();
+
+			crypto::rsa_destroy_key(key);
+			key = crypto::rsa_read_private_key_from_PEM("private.pem");
+
+			array::array *a_dec = crypto::rsa_decrypt(a_enc, key);
+			printf("Authentication started.\n");
+			return a_dec;
+		}
+		return nullptr;
 	}
 }

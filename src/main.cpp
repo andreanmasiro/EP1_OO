@@ -13,6 +13,7 @@ using namespace std;
 int main() {
     int fd;
     array::array *registeredId;
+    array::array *authenticationToken;
     if ((fd = network::connect("45.55.185.4", SERVICE_PORT)) < 0) {
         cout << "Connection failed." << endl;
         return -1;
@@ -21,6 +22,7 @@ int main() {
     }
     network::requestRegistration(fd);
     registeredId = network::registerId(fd);
+    authenticationToken = network::requestAuthentication(fd);
     network::close_socket(fd);
     return 0;
 }
