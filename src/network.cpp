@@ -88,15 +88,10 @@ namespace network {
 	    array::array *rawPacket;
 	    size_t packetSize = packet->total_size();
 	    rawPacket = array::create(packetSize + 4);
-	    byte header[4] = {packetSize & 0xFF, (packetSize >> 8) & 0xFF, (packetSize >> 16 & 0xFF, (packetSize >> 24) & 0xFF)};
+	    byte header[4] = {packetSize & 0xFF, (packetSize >> 8) & 0xFF, (packetSize >> 16) & 0xFF, (packetSize >> 24) & 0xFF};
 
 	    memcpy(rawPacket->data, header, 4);
 	    memcpy(rawPacket->data + 4, packet->bytes()->data, packetSize);
-
-	    // printf("Sending packet with length %lu\n", packetSize);
-	    // for (size_t i = 0; i < packetSize + 4; i++) {
-	    //     printf("%X ", rawPacket->data[i]);
-	    // }
 
 	    network::write(fd, rawPacket);
 	    array::destroy(rawPacket);
@@ -120,24 +115,18 @@ namespace network {
 	void requestRegistration(int fd) {
 		printf("Requesting registration...\n");
 		Packet *packet = new Packet(0xC0);
-		network::sendPacket(fd, packet);
+		sendPacket(fd, packet);
 	    delete packet;
 
 		packet = readPacket(fd);
 		if (packet->tagIs(0xC1)) {
-			array::array *content = packet->bytes();
-			for (size_t i = 0; i < content->length; i++) {
-				/* code */
-				printf("%X ", content->data[i]);
-			}
-
 			printf("Registration complete.\n");
 		}
 	}
 
-	void requestUserId(int fd) {
-		printf("Requesting user ID...\n");
-		RSA *key = crypto::rsa_read_public_key_from_PEM("public.pem");
+	array::array * registerId(int fd) {
+		printf("Registering user ID...\n");
+		RSA *key = crypto::rsa_read_public_key_from_PEM("server_pk.pem");
 		byte userId[8] = USER_ID;
 
 		array::array *id = array::create(8, userId);
@@ -149,10 +138,13 @@ namespace network {
 		delete packet;
 
 		packet = readPacket(fd);
-		array::array *content = packet->bytes();
-		for (size_t i = 0; i < content->length; i++) {
-			/* code */
-			printf("%X ", content->data[i]);
-		}
+		array::array *s_enc = packet->getValue();
+
+		crypto::rsa_destroy_key(key);
+		key = crypto::rsa_read_private_key_from_PEM("private.pem");
+
+		array::array *s_dec = crypto::rsa_decrypt(s_enc, key);
+		printf("User registered.\n");
+		return s_dec;
 	}
 }

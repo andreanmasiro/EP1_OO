@@ -103,7 +103,6 @@ array::array* rsa_decrypt(const array::array* data, RSA* rsa) {
 		std::cout << __func__ << ": empty or null data." << std::endl;
 		return nullptr;
 	}
-
 	if(rsa == nullptr || rsa == 0) {
 		std::cout << __func__ << ": empty or null key." << std::endl;
 		return nullptr;
@@ -117,7 +116,6 @@ array::array* rsa_decrypt(const array::array* data, RSA* rsa) {
 		delete[] out;
 		return nullptr;
 	}
-
 	array::array* decrypted = array::create(result, out);
 	delete[] out;
 

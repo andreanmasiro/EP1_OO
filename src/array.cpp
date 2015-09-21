@@ -79,4 +79,12 @@ array* copy(const array *a) {
 	return b;
 }
 
+void print_array(array *array) {
+	for (size_t i = 0; i < array->length; i++) {
+		/* code */
+		printf("%X ", array->data[i]);
+	}
+	printf("\n");
+}
+
 }

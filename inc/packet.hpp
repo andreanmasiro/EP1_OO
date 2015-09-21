@@ -19,6 +19,7 @@ public:
 	~Packet();
 	size_t total_size();
 	void setValue(const array::array *value);
+	array::array *getValue();
 	array::array *bytes();
 	friend ostream& operator<<(ostream &os, const Packet &p);
 	int tagIs(byte tag);

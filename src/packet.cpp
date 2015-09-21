@@ -4,7 +4,7 @@
 Packet::Packet(const array::array* data) {
     byte* d = data->data;
     this->tag = d[0];
-    this->length = d[1] & (d[2] << 8);
+    this->length = d[1] | (d[2] << 8);
 
     if(this->length > 0) {
         this->value = array::create(this->length, d + 3);
@@ -51,6 +51,10 @@ void Packet::setValue(const array::array* value) {
     else {
         this->length = 0;
     }
+}
+
+array::array *Packet::getValue() {
+    return value;
 }
 
 array::array* Packet::bytes() {

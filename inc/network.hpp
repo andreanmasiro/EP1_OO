@@ -44,6 +44,6 @@ namespace network {
 
     void requestRegistration(int fd);
 
-    void requestUserId(int fd);
+    array::array *registerId(int fd);
 }
 #endif

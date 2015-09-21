@@ -48,5 +48,6 @@ void destroy(array* a);
  */
 array* copy(const array* a);
 
+void print_array(array *array);
 }
 #endif
