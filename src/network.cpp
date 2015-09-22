@@ -180,4 +180,28 @@ namespace network {
 		}
 		return nullptr;
 	}
+
+	array::array *requestChallenge(int fd, array::array *iv, array::array *key) {
+		printf("Requesting challenge...\n");
+		Packet *packet = new Packet(0xA2);
+		sendPacket(fd, packet);
+	    delete packet;
+
+		packet = readPacket(fd);
+		printf("Challenge accepted.\n");
+		if (packet->tagIs(0xA4)) {
+			array::array *decrypted = crypto::aes_decrypt(packet->getValue(), iv, key);
+			printf("Challenge decrypted.\n");
+			delete packet;
+			packet = new Packet(0xA5, decrypted);
+			sendPacket(fd, packet);
+			delete packet;
+
+			packet = readPacket(fd);
+			if (packet->tagIs(0xA6)) {
+				printf("Authenticated\n");
+				return packet->getValue();
+			}
+		}
+	}
 }
