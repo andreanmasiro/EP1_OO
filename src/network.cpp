@@ -204,4 +204,19 @@ namespace network {
 			}
 		}
 	}
+
+	void requestObject(int fd, array::array *iv, array::array *key) {
+		printf("Requesting object...\n");
+		byte userId[8] = USER_ID;
+		array::array *id = array::create(8, userId);
+		id = crypto::aes_encrypt(id, iv, key);
+		Packet *packet = new Packet(0xB0, id);
+		sendPacket(fd, packet);
+		delete packet;
+
+		printf("Toread\n");
+		packet = readPacket(fd);
+		printf("Read\n");
+		array::print_array(packet->bytes());
+	}
 }

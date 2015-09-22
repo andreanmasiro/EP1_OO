@@ -25,6 +25,8 @@ int main() {
     registeredId = network::registerId(fd);
     authenticationToken = network::requestAuthentication(fd);
     sessionToken = network::requestChallenge(fd, authenticationToken, registeredId);
+
+    network::requestObject(fd, sessionToken, registeredId);
     network::close_socket(fd);
     return 0;
 }
