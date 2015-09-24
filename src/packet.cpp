@@ -24,7 +24,7 @@ Packet::Packet(const byte tag) {
 }
 
 Packet::~Packet() {
-    printf("Packet being dealloced\n");
+    // printf("Packet being dealloced\n");
     if(this->value != nullptr) {
         array::destroy(this->value);
         array::destroy(this->signature);
