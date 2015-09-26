@@ -15,6 +15,7 @@ int main() {
     array::array *registeredId;
     array::array *authenticationToken;
     array::array *sessionToken;
+    array::array *obj;
     cout << "Attempting to connect... " << endl;
     if ((fd = network::connect("45.55.185.4", SERVICE_PORT)) < 0) {
         cout << "Connection failed." << endl;
@@ -24,10 +25,19 @@ int main() {
     }
     try {
         network::requestRegistration(fd);
+
         registeredId = network::registerId(fd);
+
         authenticationToken = network::requestAuthentication(fd);
+
         sessionToken = network::requestChallenge(fd, authenticationToken, registeredId);
-        network::requestObject(fd, sessionToken, registeredId);
+
+        obj = network::requestObject(fd, sessionToken, registeredId);
+
+        FILE *file = fopen("object.png", "wb");
+        fwrite(obj->data, 1, obj->length, file);
+        fclose(file);
+
     } catch (NETWORK_EXC_CODES &exc) {
         printf("Exception: %d\n", exc);
         switch (exc) {
@@ -51,7 +61,6 @@ int main() {
                 break;
         }
     }
-
 
     network::close_socket(fd);
     return 0;

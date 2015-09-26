@@ -100,16 +100,19 @@ namespace network {
     }
 
     Packet *readPacket(const int fd) {
-        array::array* data = network::read(fd);
-        if (data == nullptr) {
+        array::array *header = network::read(fd, 4);
+        array::array *data = nullptr;
+        if (header == nullptr) {
             printf("Read NULL data.\n");
+        } else {
+            size_t dataSize = header->data[0] | (header->data[1] << 8) | (header->data[2] << 16) | (header->data[3] << 24);
+            data = network::read(fd, dataSize);
         }
-        array::array *dataWithoutHeader = array::create(data->length - 4);
-        memcpy(dataWithoutHeader->data, data->data + 4, data->length - 4);
-        Packet *packet = new Packet(dataWithoutHeader);
 
+        Packet *packet = new Packet(data);
+        printf("Read packet size = %d\n", data->length);
         array::destroy(data);
-        array::destroy(dataWithoutHeader);
+
         return packet;
     }
 
@@ -214,13 +217,12 @@ namespace network {
         throw(REQ_CHALLENGE_EXC_CODE_2);
     }
 
-    void requestObject(int fd, array::array *iv, array::array *key) {
+    array::array *requestObject(int fd, array::array *iv, array::array *key) {
         printf("Requesting object...\n");
         byte objId[8] = OBJ_ID;
         array::array *id = array::create(8, objId);
         array::array *c_id = crypto::aes_encrypt(id, iv, key);
-        // array::print_array(id);
-        // array::print_array(c_id);
+
         Packet *packet = new Packet(0xB0, c_id);
         sendPacket(fd, packet);
         delete packet;
@@ -228,13 +230,12 @@ namespace network {
         array::destroy(c_id);
 
         packet = readPacket(fd);
+
         if (packet->tagIs(0xB1)) {
-            for (size_t i = 0; i < 8; i++) {
-                /* code */
-                printf("%X ", objId[i]);
-            }
+            printf("AEEE\n");
+            array::array *obj = crypto::aes_decrypt(packet->getValue(), iv, key);
+            return obj;
         } else {
-            array::print_array(packet->bytes());
             throw(REQ_OBJECT_EXC_CODE);
         }
     }

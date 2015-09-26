@@ -23,7 +23,7 @@ public:
     array::array *bytes();
     friend ostream& operator<<(ostream &os, const Packet &p);
     int tagIs(byte tag);
-    
+
 private:
     byte tag;
     unsigned short length;
