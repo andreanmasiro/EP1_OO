@@ -232,7 +232,6 @@ namespace network {
         packet = readPacket(fd);
 
         if (packet->tagIs(0xB1)) {
-            printf("AEEE\n");
             array::array *obj = crypto::aes_decrypt(packet->getValue(), iv, key);
             return obj;
         } else {

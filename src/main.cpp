@@ -1,42 +1,25 @@
 #include <iostream>
 #include <cstring>
 #include "network.hpp"
+#include "networkHandler.hpp"
 #include "crypto.hpp"
 #include "array.hpp"
 #include "packet.hpp"
 
-#define ECHO_PORT 3001
-#define SERVICE_PORT 3000
-
 using namespace std;
 
 int main() {
-    int fd;
-    array::array *registeredId;
-    array::array *authenticationToken;
-    array::array *sessionToken;
-    array::array *obj;
-    cout << "Attempting to connect... " << endl;
-    if ((fd = network::connect("45.55.185.4", SERVICE_PORT)) < 0) {
-        cout << "Connection failed." << endl;
-        return -1;
-    } else {
-        cout << "Connection succeeded at " << fd << endl;
-    }
+
+    NetworkHandler *nh = new NetworkHandler();
+    nh->connect();
     try {
-        network::requestRegistration(fd);
+        nh->registerProtocol();
+        nh->authenticationProtocol();
+        nh->requestProtocol();
 
-        registeredId = network::registerId(fd);
-
-        authenticationToken = network::requestAuthentication(fd);
-
-        sessionToken = network::requestChallenge(fd, authenticationToken, registeredId);
-
-        obj = network::requestObject(fd, sessionToken, registeredId);
-
-        FILE *file = fopen("object.png", "wb");
-        fwrite(obj->data, 1, obj->length, file);
-        fclose(file);
+        FILE *fp = fopen("object.png", "wb");
+        array::write_array(fp, nh->getObject());
+        fclose(fp);
 
     } catch (NETWORK_EXC_CODES &exc) {
         printf("Exception: %d\n", exc);
@@ -62,6 +45,5 @@ int main() {
         }
     }
 
-    network::close_socket(fd);
     return 0;
 }
